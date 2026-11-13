@@ -1,0 +1,17 @@
+{
+  "model": "RandomForestRegressor",
+  "features": [
+    "gdp",
+    "family",
+    "health",
+    "freedom",
+    "generosity",
+    "corruption"
+  ],
+  "train_rows": 547,
+  "test_rows": 235,
+  "MAE": 0.3983,
+  "RMSE": 0.5086,
+  "R2": 0.7976,
+  "scikit_learn_version": "1.9.1"
+}
