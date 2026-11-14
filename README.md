@@ -32,7 +32,7 @@ This project turns a classic batch ETL into an event-driven streaming pipeline t
 
 ## 2. Architecture
 
-### Offline process (batch)
+### Offline process 
 
 The offline part prepares the data and produces the artifacts that the streaming part needs.
 
@@ -290,7 +290,7 @@ erDiagram
 
 ## 7. Dashboard explanation
 
-The dashboard imports its data from the MySQL queries in `sql/kpis.sql`, loaded as native SQL queries in Power BI. It is a snapshot of the database: after running the pipeline.
+The dashboard imports its data from the MySQL queries in `sql/kpis.sql`.
 
 | KPI | Query in `kpis.sql` | Visual | How to read it |
 |---|---|---|---|
@@ -298,27 +298,8 @@ The dashboard imports its data from the MySQL queries in `sql/kpis.sql`, loaded 
 | 2. Predictions by country | KPI 2 | Horizontal bar chart | Shows the number of test-set predictions for each country, with region, country-level MAE and average actual and predicted scores. |
 | 3. Predicted vs actual score | KPI 3 | Scatter plot | Each point represents an individual country-year prediction. Points closer to the reference diagonal indicate more accurate predictions. |
 | 4. Prediction trends over time | KPI 4a and 4b | Two line charts | The first chart compares average actual and predicted scores by historical observation year (2015–2019); the second shows the running MAE over processing time during streaming. |
-| 5. Distribution of event processing status | Extra query | Donut chart | Shows the distribution of incoming raw events by processing status (VALID, INVALID_SCHEMA, INVALID_VALUES, PREDICTION_ERROR, DUPLICATE_EVENT). |
 
-**KPI explanations**
-
-- **Mean Absolute Error (MAE):** measures the average absolute difference between predicted and actual happiness scores, expressed in score points.
-
-- **Root Mean Squared Error (RMSE):** measures the square root of the average squared prediction errors. Unlike MAE, it gives greater weight to larger prediction mistakes.
-
-- **Mean Error Bias:** represents the average of `predicted_score − actual_score`. A positive value indicates that the model tends to over-predict, while a negative value indicates under-prediction. A value close to zero indicates little systematic bias.
-
-- **Predictions by Country:** counts the successfully processed predictions for each country, grouped by region. Since the test set contains historical observations from 2015 to 2019, each country can contribute up to five predictions. Some countries have fewer observations because they are not present in every yearly dataset.
-
-- **Actual vs. Predicted Happiness Score:** compares the actual happiness score against the model's predicted score for each individual observation. The distance from the reference diagonal indicates the prediction error.
-
-- **Prediction Trends:** provides two temporal perspectives. The yearly chart compares average actual and predicted happiness scores across historical observation years (2015–2019), while the streaming chart shows the running MAE across the processing order.
-
-- **Event Processing Status:** monitors the quality of incoming Kafka events. The chart distinguishes VALID, INVALID_SCHEMA, INVALID_VALUES, PREDICTION_ERROR and DUPLICATE_EVENT counts, combining `raw_happiness_events` and `duplicate_events`.
-
-**Dashboard file**
-
-- Power BI file: `dashboards/Dashboard.pbix`
+![Dahsboard](dashboards/screenshots/Dashboard.png)
 
 ---
 
@@ -334,7 +315,7 @@ python -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-### 2. Offline process (already executed; re-run only to regenerate)
+### 2. Offline process
 
 Open and press Run All, in this order, `notebooks/eda.ipynb` and then `notebooks/model_training.ipynb` (while inside the virtual environment, kernel = the `.venv`). They write `data/processed/`, `data/streaming/` and `models/`.
 
@@ -381,10 +362,6 @@ docker compose exec mysql mysql -uhappiness -phappiness happiness -e "SELECT kaf
 # Consistency: VALID raw events = fact rows
 docker compose exec mysql mysql -uhappiness -phappiness happiness -e "SELECT (SELECT COUNT(*) FROM raw_happiness_events WHERE processing_status='VALID') AS raw_valid, (SELECT COUNT(*) FROM fact_predictions) AS fact_rows;"
 ```
-
-### 6. Dashboard
-
-Open `dashboards/Dashboard.pbix` in Power BI Desktop and refresh the data sources. Power BI connects to MySQL using the `powerbi` read-only user (host `localhost`, port `3307`, database `happiness`, user `powerbi`, password `powerbi`).
 
 ### Stop and reset
 
